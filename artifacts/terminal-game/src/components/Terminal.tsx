@@ -5,23 +5,26 @@ import { pathToString, setFileAtPath } from "../lib/fileSystemUtils";
 import { SERVERS, LOCAL_SERVER_ID } from "../data/servers";
 
 const BOOT_SEQUENCE = [
-  "MS-DOS Version 6.22",
-  "Copyright (C) MegaCorp 1994. All rights reserved.",
+  "MH-DOS Version 0.97",
+  "Copyright (C) Macrohard 1994. All rights reserved.",
+  "Starting MH-DOS...",
   "",
-  "HIMEM is testing extended memory...done.",
-  "C:\\WINDOWS\\HIMEM.SYS loaded.",
   "",
-  "Starting MS-DOS...",
+  "Initiating CtrlOpus...",
   "",
-  "Loading HACKER.SYS...",
-  "Loading NETWORK.DRV...",
-  "Loading SSH.COM...",
+  "  ____  _____ ____ ___ ____ _____ _   _ ",
+  " |  _ \| ____| __ )_ _|  _ \_   _| | | |",
+  " | |_) |  _| |  _ \| || |_) || | | |_| |",
+  " |  _ <| |___| |_) | ||  _ < | | |  _  |",
+  " |_| \_\_____|____/___|_| \_\|_| |_| |_|",
+  "  _        _     ____  ____  ",
+  " | |      / \   | __ )/ ___| ",
+  " | |     / _ \  |  _ \\___ \ ",
+  " | |___ / ___ \ | |_) |___) |",
+  " |_____/_/   \_\|____/|____/ ",
+
   "",
-  "C:\\> AUTOEXEC.BAT executing...",
-  "  PATH=C:\\DOS;C:\\TOOLS",
-  "  BLASTER=A220 I7 D1",
-  "",
-  'Type HELP for available commands.',
+  "Type HELP for available commands.",
   "",
 ];
 
@@ -29,7 +32,11 @@ function generateId() {
   return Math.random().toString(36).slice(2);
 }
 
-function makeLine(type: TerminalLine["type"], content: string, color?: string): TerminalLine {
+function makeLine(
+  type: TerminalLine["type"],
+  content: string,
+  color?: string,
+): TerminalLine {
   return { id: generateId(), type, content, color };
 }
 
@@ -79,7 +86,15 @@ export default function Terminal() {
           ...prev,
           lines: [
             ...prev.lines,
-            makeLine("system", line, line.startsWith("Loading") ? "#00ff00" : line.startsWith("  ") ? "#888888" : undefined),
+            makeLine(
+              "system",
+              line,
+              line.startsWith("Loading")
+                ? "#00ff00"
+                : line.startsWith("  ")
+                  ? "#888888"
+                  : undefined,
+            ),
           ],
         }));
       }, delay);
@@ -108,162 +123,187 @@ export default function Terminal() {
     return `${pathToString(currentPath)}> `;
   }, [state]);
 
-  const submitCommand = useCallback((inputValue: string) => {
-    const prompt = getPrompt();
-    const echoLine = makeLine("input", `${prompt}${inputValue}`);
+  const submitCommand = useCallback(
+    (inputValue: string) => {
+      const prompt = getPrompt();
+      const echoLine = makeLine("input", `${prompt}${inputValue}`);
 
-    if (state.isWriteMode) {
-      if (inputValue.trim() === ".") {
-        const content = writeLines.join("\n");
-        const updatedFs = setFileAtPath(state.fileSystem, state.currentPath, state.writeFileName, content);
-        setState((prev) => ({
-          ...prev,
-          lines: [
-            ...prev.lines,
-            echoLine,
-            makeLine("system", `File saved: ${prev.writeFileName}`, "#00ff00"),
-            makeLine("output", ""),
-          ],
-          currentInput: "",
-          isWriteMode: false,
-          writeFileName: "",
-          writeContent: "",
-          fileSystem: updatedFs,
-          history: [inputValue, ...prev.history.slice(0, 99)],
-          historyIndex: -1,
-        }));
-        setWriteLines([]);
-      } else {
-        setWriteLines((prev) => [...prev, inputValue]);
+      if (state.isWriteMode) {
+        if (inputValue.trim() === ".") {
+          const content = writeLines.join("\n");
+          const updatedFs = setFileAtPath(
+            state.fileSystem,
+            state.currentPath,
+            state.writeFileName,
+            content,
+          );
+          setState((prev) => ({
+            ...prev,
+            lines: [
+              ...prev.lines,
+              echoLine,
+              makeLine(
+                "system",
+                `File saved: ${prev.writeFileName}`,
+                "#00ff00",
+              ),
+              makeLine("output", ""),
+            ],
+            currentInput: "",
+            isWriteMode: false,
+            writeFileName: "",
+            writeContent: "",
+            fileSystem: updatedFs,
+            history: [inputValue, ...prev.history.slice(0, 99)],
+            historyIndex: -1,
+          }));
+          setWriteLines([]);
+        } else {
+          setWriteLines((prev) => [...prev, inputValue]);
+          setState((prev) => ({
+            ...prev,
+            lines: [...prev.lines, echoLine],
+            currentInput: "",
+            historyIndex: -1,
+          }));
+        }
+        return;
+      }
+
+      if (awaitingPassword && pendingServer) {
+        const result = processPasswordInput(inputValue, pendingServer);
+        const newLines = [...state.lines, echoLine, ...result.lines];
+
+        if (result.authenticated) {
+          setAwaitingPassword(false);
+          setPendingServer(null);
+          setState((prev) => ({
+            ...prev,
+            lines: newLines,
+            currentInput: "",
+            connectedServer: result.newServer ?? null,
+            currentPath: result.newPath ?? prev.currentPath,
+            fileSystem: result.newFs ?? prev.fileSystem,
+            historyIndex: -1,
+          }));
+        } else {
+          setAwaitingPassword(false);
+          setPendingServer(null);
+          setState((prev) => ({
+            ...prev,
+            lines: newLines,
+            currentInput: "",
+            historyIndex: -1,
+          }));
+        }
+        return;
+      }
+
+      if (!inputValue.trim()) {
         setState((prev) => ({
           ...prev,
           lines: [...prev.lines, echoLine],
           currentInput: "",
           historyIndex: -1,
         }));
-      }
-      return;
-    }
-
-    if (awaitingPassword && pendingServer) {
-      const result = processPasswordInput(inputValue, pendingServer);
-      const newLines = [...state.lines, echoLine, ...result.lines];
-
-      if (result.authenticated) {
-        setAwaitingPassword(false);
-        setPendingServer(null);
-        setState((prev) => ({
-          ...prev,
-          lines: newLines,
-          currentInput: "",
-          connectedServer: result.newServer ?? null,
-          currentPath: result.newPath ?? prev.currentPath,
-          fileSystem: result.newFs ?? prev.fileSystem,
-          historyIndex: -1,
-        }));
-      } else {
-        setAwaitingPassword(false);
-        setPendingServer(null);
-        setState((prev) => ({
-          ...prev,
-          lines: newLines,
-          currentInput: "",
-          historyIndex: -1,
-        }));
-      }
-      return;
-    }
-
-    if (!inputValue.trim()) {
-      setState((prev) => ({
-        ...prev,
-        lines: [...prev.lines, echoLine],
-        currentInput: "",
-        historyIndex: -1,
-      }));
-      return;
-    }
-
-    const result = processCommand(inputValue, state);
-
-    setState((prev) => {
-      let newLines: TerminalLine[];
-      if (result.clearScreen) {
-        newLines = [];
-      } else {
-        newLines = [...prev.lines, echoLine, ...result.lines];
+        return;
       }
 
-      let newConnectedServer = prev.connectedServer;
-      let newPath = result.newPath ?? prev.currentPath;
-      let newFs = result.newFs ?? prev.fileSystem;
+      const result = processCommand(inputValue, state);
 
-      if (result.awaitingPassword && result.pendingServer) {
-        setAwaitingPassword(true);
-        setPendingServer(result.pendingServer);
-      } else if ("newServer" in result) {
-        const srv = result.newServer ?? null;
-        if (srv === null) {
-          newConnectedServer = null;
-          newPath = ["C:"];
-          newFs = localServer.fileSystem;
+      setState((prev) => {
+        let newLines: TerminalLine[];
+        if (result.clearScreen) {
+          newLines = [];
         } else {
-          newConnectedServer = srv;
+          newLines = [...prev.lines, echoLine, ...result.lines];
         }
+
+        let newConnectedServer = prev.connectedServer;
+        let newPath = result.newPath ?? prev.currentPath;
+        let newFs = result.newFs ?? prev.fileSystem;
+
+        if (result.awaitingPassword && result.pendingServer) {
+          setAwaitingPassword(true);
+          setPendingServer(result.pendingServer);
+        } else if ("newServer" in result) {
+          const srv = result.newServer ?? null;
+          if (srv === null) {
+            newConnectedServer = null;
+            newPath = ["C:"];
+            newFs = localServer.fileSystem;
+          } else {
+            newConnectedServer = srv;
+          }
+        }
+
+        return {
+          ...prev,
+          lines: newLines,
+          currentInput: "",
+          currentPath: newPath,
+          connectedServer: newConnectedServer,
+          fileSystem: newFs,
+          history: inputValue.trim()
+            ? [inputValue, ...prev.history.slice(0, 99)]
+            : prev.history,
+          historyIndex: -1,
+          isWriteMode: result.enterWriteMode ?? false,
+          writeFileName: result.writeFileName ?? "",
+          writeContent: "",
+        };
+      });
+    },
+    [state, awaitingPassword, pendingServer, writeLines, getPrompt],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        submitCommand(state.currentInput);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setState((prev) => {
+          const newIndex = Math.min(
+            prev.historyIndex + 1,
+            prev.history.length - 1,
+          );
+          return {
+            ...prev,
+            historyIndex: newIndex,
+            currentInput: prev.history[newIndex] ?? "",
+          };
+        });
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setState((prev) => {
+          const newIndex = Math.max(prev.historyIndex - 1, -1);
+          return {
+            ...prev,
+            historyIndex: newIndex,
+            currentInput: newIndex === -1 ? "" : (prev.history[newIndex] ?? ""),
+          };
+        });
+      } else if (e.key === "Tab") {
+        e.preventDefault();
       }
-
-      return {
-        ...prev,
-        lines: newLines,
-        currentInput: "",
-        currentPath: newPath,
-        connectedServer: newConnectedServer,
-        fileSystem: newFs,
-        history: inputValue.trim() ? [inputValue, ...prev.history.slice(0, 99)] : prev.history,
-        historyIndex: -1,
-        isWriteMode: result.enterWriteMode ?? false,
-        writeFileName: result.writeFileName ?? "",
-        writeContent: "",
-      };
-    });
-  }, [state, awaitingPassword, pendingServer, writeLines, getPrompt]);
-
-  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      submitCommand(state.currentInput);
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setState((prev) => {
-        const newIndex = Math.min(prev.historyIndex + 1, prev.history.length - 1);
-        return {
-          ...prev,
-          historyIndex: newIndex,
-          currentInput: prev.history[newIndex] ?? "",
-        };
-      });
-    } else if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setState((prev) => {
-        const newIndex = Math.max(prev.historyIndex - 1, -1);
-        return {
-          ...prev,
-          historyIndex: newIndex,
-          currentInput: newIndex === -1 ? "" : prev.history[newIndex] ?? "",
-        };
-      });
-    } else if (e.key === "Tab") {
-      e.preventDefault();
-    }
-  }, [state.currentInput, submitCommand]);
+    },
+    [state.currentInput, submitCommand],
+  );
 
   const getLineColor = (line: TerminalLine): string => {
     if (line.color) return line.color;
     switch (line.type) {
-      case "error": return "#ff4444";
-      case "system": return "#00aaff";
-      case "input": return "#ffffff";
-      case "prompt": return "#00ff00";
-      default: return "#cccccc";
+      case "error":
+        return "#ff4444";
+      case "system":
+        return "#00aaff";
+      case "input":
+        return "#ffffff";
+      case "prompt":
+        return "#00ff00";
+      default:
+        return "#cccccc";
     }
   };
 
@@ -291,7 +331,10 @@ export default function Terminal() {
         ))}
 
         {booted && (
-          <div className="leading-5 flex items-center" style={{ color: "#cccccc" }}>
+          <div
+            className="leading-5 flex items-center"
+            style={{ color: "#cccccc" }}
+          >
             <span style={{ color: state.isWriteMode ? "#ffff00" : "#00ff00" }}>
               {state.isWriteMode ? "[WRITE] " : prompt}
             </span>
@@ -312,7 +355,13 @@ export default function Terminal() {
         ref={inputRef}
         type="text"
         value={state.currentInput}
-        onChange={(e) => setState((prev) => ({ ...prev, currentInput: e.target.value, historyIndex: -1 }))}
+        onChange={(e) =>
+          setState((prev) => ({
+            ...prev,
+            currentInput: e.target.value,
+            historyIndex: -1,
+          }))
+        }
         onKeyDown={handleKeyDown}
         className="opacity-0 absolute -left-9999 w-0 h-0"
         autoComplete="off"
@@ -333,7 +382,12 @@ export default function Terminal() {
         </span>
         <span>
           {pathToString(state.currentPath)}
-          {state.isWriteMode && <span style={{ color: "#ffff00" }}> [WRITE MODE - type . to save]</span>}
+          {state.isWriteMode && (
+            <span style={{ color: "#ffff00" }}>
+              {" "}
+              [WRITE MODE - type . to save]
+            </span>
+          )}
         </span>
       </div>
     </div>
