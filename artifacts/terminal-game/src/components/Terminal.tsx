@@ -11,17 +11,25 @@ const BOOT_SEQUENCE = [
   "",
   "",
   "Initiating CtrlOpus...",
+  "__CLEAR__",
+  " ____  _____ ____ ___ ____ _____ _   _ ",
+  "|  _ \| ____| __ )_ _|  _ \_   _| | | |",
+  "| |_) |  _| |  _ \| || |_) || | | |_| |",
+  "|  _ <| |___| |_) | ||  _ < | | |  _  |",
+  "|_| \_\_____|____/___|_| \_\|_| |_| |_|",
+  " _        _     ____  ____  ",
+  "| |      / \   | __ )/ ___| ",
+  "| |     / _ \  |  _ \\___ \ ",
+  "| |___ / ___ \ | |_) |___) |",
+  "|_____/_/   \_\|____/|____/ ",
   "",
-  "  ____  _____ ____ ___ ____ _____ _   _ ",
-  " |  _ \| ____| __ )_ _|  _ \_   _| | | |",
-  " | |_) |  _| |  _ \| || |_) || | | |_| |",
-  " |  _ <| |___| |_) | ||  _ < | | |  _  |",
-  " |_| \_\_____|____/___|_| \_\|_| |_| |_|",
-  "  _        _     ____  ____  ",
-  " | |      / \   | __ )/ ___| ",
-  " | |     / _ \  |  _ \\___ \ ",
-  " | |___ / ___ \ | |_) |___) |",
-  " |_____/_/   \_\|____/|____/ ",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
   "",
   "",
   "",
@@ -84,21 +92,25 @@ export default function Terminal() {
 
     for (const line of BOOT_SEQUENCE) {
       const t = setTimeout(() => {
-        setState((prev) => ({
-          ...prev,
-          lines: [
-            ...prev.lines,
-            makeLine(
-              "system",
-              line,
-              line.startsWith("Loading")
-                ? "#00ff00"
-                : line.startsWith("  ")
-                  ? "#888888"
-                  : undefined,
-            ),
-          ],
-        }));
+        if (line === "__CLEAR__") {
+          setState((prev) => ({ ...prev, lines: [] }));
+        } else {
+          setState((prev) => ({
+            ...prev,
+            lines: [
+              ...prev.lines,
+              makeLine(
+                "system",
+                line,
+                line.startsWith("Loading")
+                  ? "#00ff00"
+                  : line.startsWith("  ")
+                    ? "#888888"
+                    : undefined,
+              ),
+            ],
+          }));
+        }
       }, delay);
       timeouts.push(t);
       delay += line === "" ? 30 : 40;
