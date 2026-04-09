@@ -65,8 +65,7 @@ export function processCommand(
       return {
         lines: [
           out(""),
-          out("MS-DOS Version 6.22", C.WHITE),
-          out("Hacker Terminal v0.1 - UNAUTHORIZED BUILD", C.WHITE),
+          out("MH-DOS Version 0.97", C.WHITE),
           out(""),
         ],
       };
@@ -310,6 +309,24 @@ export function processCommand(
         };
       }
 
+      if (serverId === "corp") {
+        return {
+          lines: [
+            out(""),
+            sys(`Connecting to ${hostArg} (${server.ip})...`, C.GREY),
+            sys("Matching server ID detected on COM23", C.GREY),
+            sys("Forwarding connection attempt to COM23...", C.GREY),
+            sys("Attempting to connect to server...", C.GREY),
+            sys("Connection established.", C.WHITE),
+            sys(server.motd, C.ORANGE),
+            sys(`Password: `, C.YELLOW),
+          ],
+          awaitingPassword: true,
+          pendingServer: server,
+          clearScreen: true,
+        };
+      }
+
       if (server.requiresPassword) {
         return {
           lines: [
@@ -321,6 +338,7 @@ export function processCommand(
           ],
           awaitingPassword: true,
           pendingServer: server,
+          clearScreen: true,
         };
       }
 
