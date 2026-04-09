@@ -65,8 +65,8 @@ export function processCommand(
       return {
         lines: [
           out(""),
-          out("MS-DOS Version 6.22", C.GREEN),
-          out("Hacker Terminal v0.1 - UNAUTHORIZED BUILD", C.GREEN),
+          out("MS-DOS Version 6.22", C.WHITE),
+          out("Hacker Terminal v0.1 - UNAUTHORIZED BUILD", C.WHITE),
           out(""),
         ],
       };
@@ -75,7 +75,7 @@ export function processCommand(
       return {
         lines: [
           out(""),
-          out("Available commands:", C.GREEN),
+          out("Available commands:", C.WHITE),
           out("  DIR [path]       - List directory contents"),
           out("  CD [path]        - Change directory"),
           out("  TYPE [file]      - View file contents"),
@@ -210,10 +210,10 @@ export function processCommand(
     case "WHOAMI": {
       if (isRemote) {
         return {
-          lines: [out(`admin@${connectedServer!.hostname}`, C.GREEN)],
+          lines: [out(`admin@${connectedServer!.hostname}`, C.WHITE)],
         };
       }
-      return { lines: [out("user@HOME-PC", C.GREEN)] };
+      return { lines: [out("user@HOME-PC", C.WHITE)] };
     }
 
     case "IPCONFIG": {
@@ -315,7 +315,7 @@ export function processCommand(
           lines: [
             out(""),
             sys(`Connecting to ${hostArg} (${server.ip})...`, C.GREY),
-            sys(`Connection established.`, C.GREEN),
+            sys(`Connection established.`, C.WHITE),
             sys(server.motd, C.ORANGE),
             sys(`Password: `, C.YELLOW),
           ],
@@ -329,7 +329,7 @@ export function processCommand(
         lines: [
           out(""),
           sys(`Connecting to ${hostArg} (${server.ip})...`, C.GREY),
-          sys(`Connection established.`, C.GREEN),
+          sys(`Connection established.`, C.WHITE),
           sys(server.motd, C.ORANGE),
         ],
         newServer: server,
@@ -376,7 +376,7 @@ export function processPasswordInput(
       authenticated: true,
       lines: [
         out(""),
-        sys("Access granted.", C.GREEN),
+        sys("Access granted.", C.WHITE),
         out(""),
       ],
       newServer: server,

@@ -157,7 +157,7 @@ export default function Terminal() {
             lines: [
               ...prev.lines,
               echoLine,
-              makeLine("system", `File saved: ${prev.writeFileName}`, C.GREEN),
+              makeLine("system", `File saved: ${prev.writeFileName}`, C.WHITE),
               makeLine("output", ""),
             ],
             currentInput: "",
@@ -309,7 +309,7 @@ export default function Terminal() {
     switch (line.type) {
       case "error":  return C.RED;
       case "input":  return C.WHITE;
-      case "prompt": return C.GREEN;
+      case "prompt": return C.WHITE;
       default:       return C.WHITE;
     }
   };
@@ -342,14 +342,14 @@ export default function Terminal() {
             className="leading-5 flex items-center"
             style={{ color: C.WHITE }}
           >
-            <span style={{ color: state.isWriteMode ? C.YELLOW : C.GREEN }}>
+            <span style={{ color: state.isWriteMode ? C.YELLOW : C.WHITE }}>
               {state.isWriteMode ? "[WRITE] " : prompt}
             </span>
             <span>{displayInput}</span>
             <span
               className="inline-block w-2 h-4 ml-0.5"
               style={{
-                backgroundColor: cursorBlink ? C.GREEN : "transparent",
+                backgroundColor: cursorBlink ? C.WHITE : "transparent",
               }}
             />
           </div>
