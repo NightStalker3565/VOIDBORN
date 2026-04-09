@@ -4,6 +4,7 @@ import { processCommand, processPasswordInput } from "../lib/commandProcessor";
 import { pathToString, setFileAtPath } from "../lib/fileSystemUtils";
 import { SERVERS, LOCAL_SERVER_ID } from "../data/servers";
 import { C } from "../lib/colors";
+import { SFX } from "../lib/sounds";
 
 // A boot line is either:
 //   - a plain string "" or "__CLEAR__" for spacing / clear
@@ -111,6 +112,10 @@ export default function Terminal() {
 
     const timeouts: ReturnType<typeof setTimeout>[] = [];
     let delay = 0;
+    let clearedOnce = false;
+
+    // Boot start sound
+    timeouts.push(setTimeout(() => SFX.powerOn(), 0));
 
     for (const entry of sequence) {
       const isStr   = typeof entry === "string";
@@ -121,13 +126,14 @@ export default function Terminal() {
       if (text === "__CLEAR__") {
         timeouts.push(setTimeout(() => {
           setState((prev) => ({ ...prev, lines: [] }));
+          // First clear = transition to loading art phase
+          if (!clearedOnce) { SFX.systemLoading(); clearedOnce = true; }
         }, delay));
         delay += 80;
         continue;
       }
 
       if (text === "" || cDelay === 0) {
-        // Empty lines and instant lines print in full immediately
         timeouts.push(setTimeout(() => {
           setState((prev) => ({
             ...prev,
@@ -149,6 +155,7 @@ export default function Terminal() {
       for (let i = 1; i <= text.length; i++) {
         const partial = text.slice(0, i);
         timeouts.push(setTimeout(() => {
+          SFX.typing();
           setState((prev) => {
             const lines = [...prev.lines];
             const last  = lines[lines.length - 1];
@@ -163,6 +170,7 @@ export default function Terminal() {
 
     timeouts.push(setTimeout(() => {
       if (!isReturning) localStorage.setItem("mhdos_played", "true");
+      SFX.systemBoot();
       setBooted(true);
       inputRef.current?.focus();
     }, delay + 100));
@@ -203,6 +211,7 @@ export default function Terminal() {
             state.writeFileName,
             content,
           );
+          SFX.documentClose();
           setState((prev) => ({
             ...prev,
             lines: [
@@ -237,6 +246,7 @@ export default function Terminal() {
         const newLines = [...state.lines, echoLine, ...result.lines];
 
         if (result.authenticated) {
+          SFX.notification();
           setAwaitingPassword(false);
           setPendingServer(null);
           setState((prev) => ({
@@ -272,6 +282,16 @@ export default function Terminal() {
       }
 
       const result = processCommand(inputValue, state);
+
+      // Trigger sounds based on what the command did
+      const cmd = inputValue.trim().toUpperCase().split(/\s+/)[0];
+      if (cmd === "TYPE" || cmd === "CAT") SFX.documentOpen();
+      if (result.enterWriteMode)          SFX.documentOpen();
+      if (result.awaitingPassword)        SFX.notification();
+      if ("newServer" in result) {
+        if (result.newServer === null)    SFX.endOfConversation();
+        else                              SFX.notification();
+      }
 
       setState((prev) => {
         let newLines: TerminalLine[];
@@ -322,6 +342,7 @@ export default function Terminal() {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
+        SFX.enter();
         submitCommand(state.currentInput);
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
@@ -348,6 +369,8 @@ export default function Terminal() {
         });
       } else if (e.key === "Tab") {
         e.preventDefault();
+      } else if (e.key.length === 1) {
+        SFX.typing();
       }
     },
     [state.currentInput, submitCommand],
