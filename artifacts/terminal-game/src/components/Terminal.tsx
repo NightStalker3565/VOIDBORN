@@ -421,7 +421,6 @@ export default function Terminal() {
           }))
         }
         onKeyDown={handleKeyDown}
-        onBlur={() => setTimeout(() => inputRef.current?.focus(), 0)}
         className="opacity-0 absolute -left-9999 w-0 h-0"
         autoComplete="off"
         autoCorrect="off"
