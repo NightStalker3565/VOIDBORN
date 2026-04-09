@@ -39,6 +39,7 @@ export interface CommandResult {
   clearScreen?: boolean;
   awaitingPassword?: boolean;
   pendingServer?: Server;
+  typingSequence?: { text: string; color?: string; charDelay?: number }[];
 }
 
 export function processCommand(
@@ -311,19 +312,20 @@ export function processCommand(
 
       if (serverId === "corp") {
         return {
-          lines: [
-            out(""),
-            sys(`Connecting to ${hostArg} (${server.ip})...`, C.GREY),
-            sys("Matching server ID detected on COM23", C.GREY),
-            sys("Forwarding connection attempt to COM23...", C.GREY),
-            sys("Attempting to connect to server...", C.GREY),
-            sys("Connection established.", C.WHITE),
-            sys(server.motd, C.ORANGE),
-            sys(`Password: `, C.YELLOW),
-          ],
+          lines: [],
           awaitingPassword: true,
           pendingServer: server,
           clearScreen: true,
+          typingSequence: [
+            { text: "", color: C.WHITE },
+            { text: `Connecting to ${hostArg} (${server.ip})...`, color: C.GREY, charDelay: 50 },
+            { text: "Matching server ID detected on COM23", color: C.GREY, charDelay: 50 },
+            { text: "Forwarding connection attempt to COM23...", color: C.GREY, charDelay: 50 },
+            { text: "Attempting to connect to server...", color: C.GREY, charDelay: 50 },
+            { text: "Connection established.", color: C.WHITE, charDelay: 50 },
+            { text: server.motd, color: C.ORANGE, charDelay: 20 },
+            { text: `Password: `, color: C.YELLOW, charDelay: 50 },
+          ],
         };
       }
 

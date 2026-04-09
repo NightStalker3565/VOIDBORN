@@ -92,6 +92,7 @@ export default function Terminal() {
   const [pendingServer, setPendingServer] = useState<Server | null>(null);
   const [writeLines, setWriteLines] = useState<string[]>([]);
   const [cursorBlink, setCursorBlink] = useState(true);
+  const [commandSequence, setCommandSequence] = useState<{ text: string; color?: string; charDelay?: number }[] | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -177,6 +178,62 @@ export default function Terminal() {
 
     return () => timeouts.forEach(clearTimeout);
   }, []);
+
+  useEffect(() => {
+    if (!commandSequence) return;
+
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
+    let delay = 0;
+
+    for (const entry of commandSequence) {
+      const text = entry.text;
+      const color = entry.color ?? C.WHITE;
+      const cDelay = entry.charDelay ?? CHAR_DELAY_DEFAULT;
+
+      if (text === "" || cDelay === 0) {
+        timeouts.push(setTimeout(() => {
+          setState((prev) => ({
+            ...prev,
+            lines: [...prev.lines, makeLine("system", text, color)],
+          }));
+        }, delay));
+        delay += cDelay === 0 ? 20 : 30;
+        continue;
+      }
+
+      // Push an empty line first, then fill it character by character
+      timeouts.push(setTimeout(() => {
+        setState((prev) => ({
+          ...prev,
+          lines: [...prev.lines, makeLine("system", "", color)],
+        }));
+      }, delay));
+
+      for (let i = 1; i <= text.length; i++) {
+        const partial = text.slice(0, i);
+        timeouts.push(setTimeout(() => {
+          SFX.typing();
+          setState((prev) => {
+            const lines = [...prev.lines];
+            const last = lines[lines.length - 1];
+            if (last) lines[lines.length - 1] = { ...last, content: partial };
+            return { ...prev, lines };
+          });
+        }, delay + i * cDelay));
+      }
+
+      delay += text.length * cDelay + LINE_GAP;
+    }
+
+    timeouts.push(setTimeout(() => {
+      setCommandSequence(null);
+      if (awaitingPassword) {
+        inputRef.current?.focus();
+      }
+    }, delay + 100));
+
+    return () => timeouts.forEach(clearTimeout);
+  }, [commandSequence, awaitingPassword]);
 
   const focusInput = useCallback(() => {
     inputRef.current?.focus();
@@ -291,6 +348,33 @@ export default function Terminal() {
       if ("newServer" in result) {
         if (result.newServer === null)    SFX.endOfConversation();
         else                              SFX.notification();
+      }
+
+      if (result.typingSequence) {
+        setState((prev) => {
+          let newLines: TerminalLine[];
+          if (result.clearScreen) {
+            newLines = [];
+          } else {
+            newLines = [...prev.lines, echoLine];
+          }
+
+          return {
+            ...prev,
+            lines: newLines,
+            currentInput: "",
+            history: inputValue.trim()
+              ? [inputValue, ...prev.history.slice(0, 99)]
+              : prev.history,
+            historyIndex: -1,
+          };
+        });
+        setCommandSequence(result.typingSequence);
+        if (result.awaitingPassword && result.pendingServer) {
+          setAwaitingPassword(true);
+          setPendingServer(result.pendingServer);
+        }
+        return;
       }
 
       setState((prev) => {
