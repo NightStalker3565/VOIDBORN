@@ -97,7 +97,7 @@ export default function Terminal() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => setCursorBlink((b) => !b), 120);
+    const interval = setInterval(() => setCursorBlink((b) => !b), 530);
     return () => clearInterval(interval);
   }, []);
 
