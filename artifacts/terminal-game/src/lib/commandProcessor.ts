@@ -966,6 +966,12 @@ export function processCommand(
       };
     }
 
+    case "UWU": {
+      return {
+        lines: [out("ayoooooo")],
+      };
+    }
+
     case "67": {
       return {
         lines: [],
