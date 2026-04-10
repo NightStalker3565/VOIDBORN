@@ -966,6 +966,65 @@ export function processCommand(
       };
     }
 
+    case "OHIO_RIZZLER":
+    case "OHIO": {
+      return {
+        lines: [],
+        clearScreen: true,
+        typingSequence: [
+          { text: "", charDelay: 0 },
+          { text: "  ██████╗ ██╗  ██╗██╗ ██████╗ ", color: C.RED, charDelay: 0 },
+          { text: "  ██╔═══██╗██║  ██║██║██╔═══██╗", color: C.RED, charDelay: 0 },
+          { text: "  ██║   ██║███████║██║██║   ██║", color: C.RED, charDelay: 0 },
+          { text: "  ██║   ██║██╔══██║██║██║   ██║", color: C.RED, charDelay: 0 },
+          { text: "  ╚██████╔╝██║  ██║██║╚██████╔╝", color: C.RED, charDelay: 0 },
+          { text: "   ╚═════╝ ╚═╝  ╚═╝╚═╝ ╚═════╝ ", color: C.RED, charDelay: 0 },
+          { text: "", charDelay: 0 },
+          { text: "  ⚠ WARNING: OHIO ENTITY DETECTED ⚠", color: C.RED, charDelay: 50 },
+          { text: "", charDelay: 0 },
+          { text: "  Rizz level............. INFINITE", color: C.ORANGE, charDelay: 40 },
+          { text: "  Sigma status........... GRINDING", color: C.ORANGE, charDelay: 40 },
+          { text: "  Ohio origin............ CONFIRMED", color: C.RED,    charDelay: 40 },
+          { text: "  Skibidi toilet nearby.. YES", color: C.RED,    charDelay: 40 },
+          { text: "", charDelay: 0 },
+          { text: "  \"Only in Ohio...\"", color: C.WHITE, charDelay: 70 },
+          { text: "", charDelay: 0 },
+          { text: "  The Rizzler has entered the server.", color: C.ORANGE, charDelay: 50 },
+          { text: "  No cap. Frfr.", color: C.WHITE,  charDelay: 60 },
+          { text: "", charDelay: 0 },
+        ],
+      };
+    }
+
+    case "SKIBIDI": {
+      return {
+        lines: [],
+        clearScreen: true,
+        typingSequence: [
+          { text: "", charDelay: 0 },
+          { text: "        .--.   ", color: C.CYAN, charDelay: 0 },
+          { text: "       |o_o |  ", color: C.CYAN, charDelay: 0 },
+          { text: "       |:_/ |  ", color: C.CYAN, charDelay: 0 },
+          { text: "      //   \\ \\ ", color: C.GREY, charDelay: 0 },
+          { text: "     (|     | )", color: C.GREY, charDelay: 0 },
+          { text: "    /'\\_   _/`\\", color: C.GREY, charDelay: 0 },
+          { text: "    \\___)=(___/ ", color: C.GREY, charDelay: 0 },
+          { text: "    [  TOILET  ]", color: C.GREY, charDelay: 0 },
+          { text: "", charDelay: 0 },
+          { text: "  ♪ SKIBIDI SKIBIDI SKIBIDI ♪", color: C.CYAN, charDelay: 60 },
+          { text: "", charDelay: 0 },
+          { text: "  SKIBIDI TOILET PROTOCOL v3.14", color: C.CYAN,  charDelay: 40 },
+          { text: "  Camera status........... WATCHING", color: C.WHITE, charDelay: 40 },
+          { text: "  Speakerman online....... YES", color: C.WHITE, charDelay: 40 },
+          { text: "  TV man signal........... STRONG", color: C.WHITE, charDelay: 40 },
+          { text: "  G-Man threat level...... SKIBIDI", color: C.RED,   charDelay: 40 },
+          { text: "", charDelay: 0 },
+          { text: "  ♪ dop dop dop dop dop dop ♪", color: C.CYAN, charDelay: 50 },
+          { text: "", charDelay: 0 },
+        ],
+      };
+    }
+
     case "MATRIX": {
       const chars = "ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾙﾐ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&";
       function randStr(len: number) {
