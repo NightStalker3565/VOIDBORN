@@ -891,24 +891,8 @@ export function processCommand(
         lines: [],
         clearScreen: true,
         typingSequence: [
-          { text: "", charDelay: 0 },
-          { text: "        ,     ,", color: C.YELLOW, charDelay: 0 },
-          { text: "       (\\____/)", color: C.YELLOW, charDelay: 0 },
-          { text: "        (_oo_)", color: C.YELLOW, charDelay: 0 },
-          { text: "          (O)", color: C.YELLOW, charDelay: 0 },
-          { text: "        __||__    \\)", color: C.YELLOW, charDelay: 0 },
-          { text: "     []/______\\[] /", color: C.YELLOW, charDelay: 0 },
-          { text: "     / \\______/ \\/", color: C.YELLOW, charDelay: 0 },
-          { text: "    /    /__\\", color: C.YELLOW, charDelay: 0 },
-          { text: "   (\\   /____\\", color: C.YELLOW, charDelay: 0 },
-          { text: "", charDelay: 0 },
-          { text: "  *** THE GOLDEN KNIGHT ***", color: C.YELLOW, charDelay: 60 },
-          { text: "", charDelay: 0 },
-          { text: "  Honor. Valor. Gold.", color: C.WHITE, charDelay: 50 },
-          { text: "  The knight rides at dawn.", color: C.WHITE, charDelay: 50 },
-          { text: "", charDelay: 0 },
-          { text: "  [ACCESS LEVEL: LEGENDARY]", color: C.YELLOW, charDelay: 40 },
-          { text: "", charDelay: 0 },
+          { text: "Not the best team, but they have style!", color: C.YELLOW, charDelay: 0 },
+
         ],
       };
     }
@@ -932,7 +916,7 @@ export function processCommand(
         lines: [],
         clearScreen: true,
         typingSequence: [
-          {text: "Have you Cynned?"}
+          {text: "NULL"}
         ],
       };
     }
@@ -949,9 +933,9 @@ export function processCommand(
         clearScreen: true,
         typingSequence: [
           { text: "   ██████╗ ███████╗", color: "#FF0000", charDelay: 0 },
-          { text: "  ██╔════╝ ╚════██║", color: "#FF6900", charDelay: 0 },
-          { text: "  ██████╗      ██╔╝", color: "#FFD700", charDelay: 0 },
-          { text: "  ██╔══██╗    ██╔╝ ", color: "#FF6900", charDelay: 0 },
+          { text: "  ██╔════╝ ╚════██║", color: "#FF0000", charDelay: 0 },
+          { text: "  ██████╗      ██╔╝", color: "#FF0000", charDelay: 0 },
+          { text: "  ██╔══██╗    ██╔╝ ", color: "#FF0000", charDelay: 0 },
           { text: "  ╚██████╔╝   ██║  ", color: "#FF0000", charDelay: 0 },
           { text: "   ╚═════╝    ╚═╝  ", color: "#FF0000", charDelay: 0 },
         ],
@@ -959,12 +943,14 @@ export function processCommand(
     }
 
     case "OHIO_RIZZLER":
+    case "RIZZLER":
+    case "RIZZ":
     case "OHIO": {
       return {
         lines: [],
         clearScreen: true,
         typingSequence: [
-          { text: "ERROR: You can only use this command in Ohio.", charDelay: 0 },
+          { text: "ERROR: You can only use this command in Ohio.", color: "#FF0000", charDelay: 0 },
         ],
       };
     }
