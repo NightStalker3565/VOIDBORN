@@ -6,17 +6,11 @@ import { SERVERS, LOCAL_SERVER_ID } from "../data/servers";
 import { C } from "../lib/colors";
 import { SFX } from "../lib/sounds";
 
-// A boot line is either:
-//   - a plain string "" or "__CLEAR__" for spacing / clear
-//   - { text, color, charDelay? }
-//       charDelay = ms between each character (default 18)
-//       set charDelay: 3 for ASCII art so it sweeps in fast
 type BootLine = string | { text: string; color: string; charDelay?: number };
 
-const CHAR_DELAY_DEFAULT = 18; // ms per character for normal text
-const LINE_GAP           = 60; // ms added after each line finishes
+const CHAR_DELAY_DEFAULT = 18;
+const LINE_GAP           = 60;
 
-// charDelay: 0 = print instantly (no typewriter)
 const BOOT_SEQUENCE: BootLine[] = [
   { text: "MH-DOS Version 0.97",                               color: C.WHITE },
   { text: "Copyright (C) Macrohard 1994. All rights reserved.", color: C.WHITE },
@@ -40,7 +34,6 @@ const BOOT_SEQUENCE: BootLine[] = [
   { text: "Type HELP for available commands.",                  color: C.WHITE },
 ];
 
-// Shown on return visits — art and text appear instantly, no waiting
 const RETURN_BOOT_SEQUENCE: BootLine[] = [
   { text: "  ____  _____ ____ ___ ____ _____ _   _ ",          color: C.WHITE, charDelay: 0 },
   { text: " |  _ \\| ____| __ )_ _|  _ \\_   _| | | |",        color: C.WHITE, charDelay: 0 },
@@ -85,6 +78,9 @@ const initialState: TerminalState = {
   writeContent: "",
 };
 
+// Delay between each output line appearing (ms) — gives the "slow drip" effect
+const OUTPUT_LINE_DELAY = 28;
+
 export default function Terminal() {
   const [state, setState] = useState<TerminalState>(initialState);
   const [booted, setBooted] = useState(false);
@@ -93,20 +89,34 @@ export default function Terminal() {
   const [writeLines, setWriteLines] = useState<string[]>([]);
   const [cursorBlink, setCursorBlink] = useState(true);
   const [commandSequence, setCommandSequence] = useState<{ text: string; color?: string; charDelay?: number }[] | null>(null);
+  const [cursorPos, setCursorPos] = useState(0);
+
+  // Queue of lines to drip-print into state.lines one at a time
+  const [outputQueue, setOutputQueue] = useState<TerminalLine[]>([]);
+  const outputQueueRef = useRef<TerminalLine[]>([]);
+  const outputTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Cursor blink
   useEffect(() => {
     const interval = setInterval(() => setCursorBlink((b) => !b), 530);
     return () => clearInterval(interval);
   }, []);
 
+  // Reset blink when cursor moves (so it stays solid briefly after moving)
+  const resetBlink = useCallback(() => {
+    setCursorBlink(true);
+  }, []);
+
+  // Auto-scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [state.lines, state.currentInput]);
+  }, [state.lines, state.currentInput, outputQueue]);
 
+  // Boot sequence
   useEffect(() => {
     const isReturning = localStorage.getItem("mhdos_played") === "true";
     const sequence = isReturning ? RETURN_BOOT_SEQUENCE : BOOT_SEQUENCE;
@@ -115,7 +125,6 @@ export default function Terminal() {
     let delay = 0;
     let clearedOnce = false;
 
-    // Boot start sound
     timeouts.push(setTimeout(() => SFX.powerOn(), 0));
 
     for (const entry of sequence) {
@@ -127,7 +136,6 @@ export default function Terminal() {
       if (text === "__CLEAR__") {
         timeouts.push(setTimeout(() => {
           setState((prev) => ({ ...prev, lines: [] }));
-          // First clear = transition to loading art phase
           if (!clearedOnce) { SFX.systemLoading(); clearedOnce = true; }
         }, delay));
         delay += 80;
@@ -145,7 +153,6 @@ export default function Terminal() {
         continue;
       }
 
-      // Push an empty line first, then fill it character by character
       timeouts.push(setTimeout(() => {
         setState((prev) => ({
           ...prev,
@@ -179,6 +186,7 @@ export default function Terminal() {
     return () => timeouts.forEach(clearTimeout);
   }, []);
 
+  // Typing animation for SSH / special command sequences
   useEffect(() => {
     if (!commandSequence) return;
 
@@ -201,7 +209,6 @@ export default function Terminal() {
         continue;
       }
 
-      // Push an empty line first, then fill it character by character
       timeouts.push(setTimeout(() => {
         setState((prev) => ({
           ...prev,
@@ -235,11 +242,39 @@ export default function Terminal() {
     return () => timeouts.forEach(clearTimeout);
   }, [commandSequence, awaitingPassword]);
 
+  // Output queue drip effect — one line every OUTPUT_LINE_DELAY ms
+  const drainQueue = useCallback(() => {
+    if (outputQueueRef.current.length === 0) return;
+    const [next, ...rest] = outputQueueRef.current;
+    outputQueueRef.current = rest;
+    setState((prev) => ({ ...prev, lines: [...prev.lines, next] }));
+    if (rest.length > 0) {
+      outputTimerRef.current = setTimeout(drainQueue, OUTPUT_LINE_DELAY);
+    }
+  }, []);
+
+  const enqueueLines = useCallback(
+    (lines: TerminalLine[]) => {
+      if (lines.length === 0) return;
+      // Cancel any in-flight drain and flush remaining items first
+      if (outputTimerRef.current) clearTimeout(outputTimerRef.current);
+      outputQueueRef.current = [...outputQueueRef.current, ...lines];
+      outputTimerRef.current = setTimeout(drainQueue, OUTPUT_LINE_DELAY);
+    },
+    [drainQueue],
+  );
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (outputTimerRef.current) clearTimeout(outputTimerRef.current);
+    };
+  }, []);
+
   const focusInput = useCallback(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Re-grab focus on any click anywhere in the document
   useEffect(() => {
     const handleClick = () => inputRef.current?.focus();
     document.addEventListener("click", handleClick);
@@ -258,6 +293,8 @@ export default function Terminal() {
     (inputValue: string) => {
       const prompt = getPrompt();
       const echoLine = makeLine("input", `${prompt}${inputValue}`);
+
+      setCursorPos(0);
 
       if (state.isWriteMode) {
         if (inputValue.trim() === ".") {
@@ -300,7 +337,13 @@ export default function Terminal() {
 
       if (awaitingPassword && pendingServer) {
         const result = processPasswordInput(inputValue, pendingServer);
-        const newLines = [...state.lines, echoLine, ...result.lines];
+        setState((prev) => ({
+          ...prev,
+          lines: [...prev.lines, echoLine],
+          currentInput: "",
+          historyIndex: -1,
+        }));
+        enqueueLines(result.lines);
 
         if (result.authenticated) {
           SFX.notification();
@@ -308,22 +351,13 @@ export default function Terminal() {
           setPendingServer(null);
           setState((prev) => ({
             ...prev,
-            lines: newLines,
-            currentInput: "",
             connectedServer: result.newServer ?? null,
             currentPath: result.newPath ?? prev.currentPath,
             fileSystem: result.newFs ?? prev.fileSystem,
-            historyIndex: -1,
           }));
         } else {
           setAwaitingPassword(false);
           setPendingServer(null);
-          setState((prev) => ({
-            ...prev,
-            lines: newLines,
-            currentInput: "",
-            historyIndex: -1,
-          }));
         }
         return;
       }
@@ -340,7 +374,6 @@ export default function Terminal() {
 
       const result = processCommand(inputValue, state);
 
-      // Trigger sounds based on what the command did
       const cmd = inputValue.trim().toUpperCase().split(/\s+/)[0];
       if (cmd === "TYPE" || cmd === "CAT") SFX.documentOpen();
       if (result.enterWriteMode)          SFX.documentOpen();
@@ -352,13 +385,7 @@ export default function Terminal() {
 
       if (result.typingSequence) {
         setState((prev) => {
-          let newLines: TerminalLine[];
-          if (result.clearScreen) {
-            newLines = [];
-          } else {
-            newLines = [...prev.lines, echoLine];
-          }
-
+          const newLines = result.clearScreen ? [] : [...prev.lines, echoLine];
           return {
             ...prev,
             lines: newLines,
@@ -380,9 +407,9 @@ export default function Terminal() {
       setState((prev) => {
         let newLines: TerminalLine[];
         if (result.clearScreen) {
-          newLines = [];
+          newLines = [echoLine];
         } else {
-          newLines = [...prev.lines, echoLine, ...result.lines];
+          newLines = [...prev.lines, echoLine];
         }
 
         let newConnectedServer = prev.connectedServer;
@@ -419,9 +446,23 @@ export default function Terminal() {
           writeContent: "",
         };
       });
+
+      // Drip the output lines instead of dumping them all at once
+      enqueueLines(result.lines);
     },
-    [state, awaitingPassword, pendingServer, writeLines, getPrompt],
+    [state, awaitingPassword, pendingServer, writeLines, getPrompt, enqueueLines],
   );
+
+  // Read the native input's selectionStart after the browser has updated it
+  const syncCursorPos = useCallback(() => {
+    requestAnimationFrame(() => {
+      const pos = inputRef.current?.selectionStart ?? null;
+      if (pos !== null) {
+        setCursorPos(pos);
+        resetBlink();
+      }
+    });
+  }, [resetBlink]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
@@ -435,35 +476,65 @@ export default function Terminal() {
             prev.historyIndex + 1,
             prev.history.length - 1,
           );
+          const newInput = prev.history[newIndex] ?? "";
+          // Cursor goes to end of restored command
+          setTimeout(() => setCursorPos(newInput.length), 0);
           return {
             ...prev,
             historyIndex: newIndex,
-            currentInput: prev.history[newIndex] ?? "",
+            currentInput: newInput,
           };
         });
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
         setState((prev) => {
           const newIndex = Math.max(prev.historyIndex - 1, -1);
+          const newInput = newIndex === -1 ? "" : (prev.history[newIndex] ?? "");
+          setTimeout(() => setCursorPos(newInput.length), 0);
           return {
             ...prev,
             historyIndex: newIndex,
-            currentInput: newIndex === -1 ? "" : (prev.history[newIndex] ?? ""),
+            currentInput: newInput,
           };
         });
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        // Let the browser handle cursor movement, then sync our position
+        syncCursorPos();
+      } else if (e.key === "Home" || e.key === "End") {
+        syncCursorPos();
       } else if (e.key === "Tab") {
         e.preventDefault();
       } else if (e.key.length === 1) {
         SFX.typing();
+        // Cursor will be updated via onChange
+      } else if (e.key === "Backspace" || e.key === "Delete") {
+        // Cursor will be updated via onChange
       }
     },
-    [state.currentInput, submitCommand],
+    [state.currentInput, submitCommand, syncCursorPos],
   );
 
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value;
+      const pos = e.target.selectionStart ?? val.length;
+      setState((prev) => ({
+        ...prev,
+        currentInput: val,
+        historyIndex: -1,
+      }));
+      setCursorPos(pos);
+      resetBlink();
+    },
+    [resetBlink],
+  );
+
+  const handleSelect = useCallback(() => {
+    syncCursorPos();
+  }, [syncCursorPos]);
+
   const getLineColor = (line: TerminalLine): string => {
-    // Explicit color always wins
     if (line.color) return line.color;
-    // Type-based fallbacks
     switch (line.type) {
       case "error":  return C.RED;
       case "input":  return C.WHITE;
@@ -473,9 +544,16 @@ export default function Terminal() {
   };
 
   const prompt = getPrompt();
-  const displayInput = awaitingPassword
+
+  // Build the cursor-split display
+  const rawInput = awaitingPassword
     ? "*".repeat(state.currentInput.length)
     : state.currentInput;
+
+  const safeCursorPos = Math.min(cursorPos, rawInput.length);
+  const beforeCursor = rawInput.slice(0, safeCursorPos);
+  const cursorChar   = rawInput[safeCursorPos] ?? " ";
+  const afterCursor  = rawInput.slice(safeCursorPos + 1);
 
   return (
     <div
@@ -503,13 +581,18 @@ export default function Terminal() {
             <span style={{ color: state.isWriteMode ? C.YELLOW : C.WHITE }}>
               {state.isWriteMode ? "[WRITE] " : prompt}
             </span>
-            <span>{displayInput}</span>
+            <span>{beforeCursor}</span>
             <span
-              className="inline-block w-2 h-4 ml-0.5"
               style={{
                 backgroundColor: cursorBlink ? C.WHITE : "transparent",
+                color: cursorBlink ? "black" : C.WHITE,
+                minWidth: "0.5rem",
+                display: "inline-block",
               }}
-            />
+            >
+              {cursorChar}
+            </span>
+            <span>{afterCursor}</span>
           </div>
         )}
 
@@ -520,14 +603,9 @@ export default function Terminal() {
         ref={inputRef}
         type="text"
         value={state.currentInput}
-        onChange={(e) =>
-          setState((prev) => ({
-            ...prev,
-            currentInput: e.target.value,
-            historyIndex: -1,
-          }))
-        }
+        onChange={handleChange}
         onKeyDown={handleKeyDown}
+        onSelect={handleSelect}
         className="opacity-0 absolute -left-9999 w-0 h-0"
         autoComplete="off"
         autoCorrect="off"
