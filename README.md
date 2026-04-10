@@ -1,1 +1,2 @@
-Just a terminal game I work on. If you found this, I see zero reason for you not to try it out. _Juuuuust suggesting._
+Ok, allow me to explain. 
+So, basically, back in Grade 6 (I know chat, so YOUNG) I made a game for CMD called "VOIDBORN". I used Replit AI to make it. Then, I ran out of Replit credits, I honestly hated the product, and It Just Sucked. Now, to 2026, I'm a lot older now, and I would like to remake this game for fun. So, I'm... USING REPLIT! With the new system and crap, I can change it daily. And, GitHub Copilot helps me when I run out of credits. Would be a lot of fun if you got it working for yourself! Pretty unplayable right now, but it'll be a website. Have a good day, and check this page when you can!
