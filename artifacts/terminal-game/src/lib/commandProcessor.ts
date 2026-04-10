@@ -886,6 +886,86 @@ export function processCommand(
       };
     }
 
+    case "GOLDENKNIGHT": {
+      return {
+        lines: [],
+        clearScreen: true,
+        typingSequence: [
+          { text: "", charDelay: 0 },
+          { text: "        ,     ,", color: C.YELLOW, charDelay: 0 },
+          { text: "       (\\____/)", color: C.YELLOW, charDelay: 0 },
+          { text: "        (_oo_)", color: C.YELLOW, charDelay: 0 },
+          { text: "          (O)", color: C.YELLOW, charDelay: 0 },
+          { text: "        __||__    \\)", color: C.YELLOW, charDelay: 0 },
+          { text: "     []/______\\[] /", color: C.YELLOW, charDelay: 0 },
+          { text: "     / \\______/ \\/", color: C.YELLOW, charDelay: 0 },
+          { text: "    /    /__\\", color: C.YELLOW, charDelay: 0 },
+          { text: "   (\\   /____\\", color: C.YELLOW, charDelay: 0 },
+          { text: "", charDelay: 0 },
+          { text: "  *** THE GOLDEN KNIGHT ***", color: C.YELLOW, charDelay: 60 },
+          { text: "", charDelay: 0 },
+          { text: "  Honor. Valor. Gold.", color: C.WHITE, charDelay: 50 },
+          { text: "  The knight rides at dawn.", color: C.WHITE, charDelay: 50 },
+          { text: "", charDelay: 0 },
+          { text: "  [ACCESS LEVEL: LEGENDARY]", color: C.YELLOW, charDelay: 40 },
+          { text: "", charDelay: 0 },
+        ],
+      };
+    }
+
+    case "FEMBOY": {
+      return {
+        lines: [],
+        clearScreen: true,
+        typingSequence: [
+          { text: "", charDelay: 0 },
+          { text: "  ／|、", color: "#FF69B4", charDelay: 0 },
+          { text: " (˚ˎ 。7", color: "#FF69B4", charDelay: 0 },
+          { text: "  |、˜〵", color: "#FF69B4", charDelay: 0 },
+          { text: "  じしˍ,)ノ", color: "#FF69B4", charDelay: 0 },
+          { text: "", charDelay: 0 },
+          { text: "  ✦ FEMBOY MODE ACTIVATED ✦", color: "#FF69B4", charDelay: 50 },
+          { text: "", charDelay: 0 },
+          { text: "  Thigh highs: ON", color: "#FFB6C1", charDelay: 40 },
+          { text: "  Confidence: MAXIMUM", color: "#FFB6C1", charDelay: 40 },
+          { text: "  Tail: wagging", color: "#FFB6C1", charDelay: 40 },
+          { text: "", charDelay: 0 },
+          { text: "  nya~ ^w^", color: "#FF69B4", charDelay: 60 },
+          { text: "", charDelay: 0 },
+        ],
+      };
+    }
+
+    case "MURDER_DRONES": {
+      return {
+        lines: [],
+        clearScreen: true,
+        typingSequence: [
+          { text: "", charDelay: 0 },
+          { text: "  [JCJenson (in space!) - CLASSIFIED TERMINAL]", color: C.RED, charDelay: 30 },
+          { text: "", charDelay: 0 },
+          { text: "  DISASSEMBLY DRONE UPLINK ESTABLISHED", color: C.RED, charDelay: 50 },
+          { text: "", charDelay: 0 },
+          { text: "   ___", color: C.GREY, charDelay: 0 },
+          { text: "  /   \\    <  Target acquired.", color: C.GREY, charDelay: 0 },
+          { text: " | X X |", color: C.RED,  charDelay: 0 },
+          { text: "  \\___/", color: C.GREY, charDelay: 0 },
+          { text: "  /|_|\\", color: C.GREY, charDelay: 0 },
+          { text: " / | | \\", color: C.GREY, charDelay: 0 },
+          { text: "", charDelay: 0 },
+          { text: "  Worker Drone detected in sector 7.", color: C.WHITE, charDelay: 50 },
+          { text: "  Deploying absolute solver...", color: C.RED,   charDelay: 50 },
+          { text: "", charDelay: 0 },
+          { text: "  N: I can handle this.", color: C.YELLOW, charDelay: 60 },
+          { text: "  Uzi: No you literally cannot.", color: "#9B59B6", charDelay: 60 },
+          { text: "  V: *sips oil*", color: C.RED,    charDelay: 60 },
+          { text: "", charDelay: 0 },
+          { text: "  >> ABSOLUTE SOLVER ONLINE <<", color: C.RED, charDelay: 40 },
+          { text: "", charDelay: 0 },
+        ],
+      };
+    }
+
     case "MATRIX": {
       const chars = "ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾙﾐ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&";
       function randStr(len: number) {
