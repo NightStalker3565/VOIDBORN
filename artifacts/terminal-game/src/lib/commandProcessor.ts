@@ -966,6 +966,32 @@ export function processCommand(
       };
     }
 
+    case "67": {
+      return {
+        lines: [],
+        clearScreen: true,
+        typingSequence: [
+          { text: "", charDelay: 0 },
+          { text: "  ███████╗ ███████╗", color: "#FF0000", charDelay: 0 },
+          { text: "  ██╔════╝ ╚════██║", color: "#FF6900", charDelay: 0 },
+          { text: "  ███████╗     ██╔╝", color: "#FFD700", charDelay: 0 },
+          { text: "  ╚════██║    ██╔╝ ", color: "#FF6900", charDelay: 0 },
+          { text: "  ███████║    ██║  ", color: "#FF0000", charDelay: 0 },
+          { text: "  ╚══════╝    ╚═╝  ", color: "#FF0000", charDelay: 0 },
+          { text: "", charDelay: 0 },
+          { text: "  TEKASHI PROTOCOL ENGAGED", color: "#FF0000", charDelay: 50 },
+          { text: "", charDelay: 0 },
+          { text: "  Rainbow level........ MAXIMUM", color: "#FF69B4", charDelay: 40 },
+          { text: "  Snitching status..... ACTIVE", color: "#FFD700", charDelay: 40 },
+          { text: "  Security detail...... 50 FEDS", color: "#FF0000", charDelay: 40 },
+          { text: "  Tattoos.............. YES (face)", color: "#FF6900", charDelay: 40 },
+          { text: "", charDelay: 0 },
+          { text: "  GINE GINE GINE", color: "#FF0000", charDelay: 60 },
+          { text: "", charDelay: 0 },
+        ],
+      };
+    }
+
     case "OHIO_RIZZLER":
     case "OHIO": {
       return {
