@@ -67,6 +67,7 @@ export function processCommand(
         lines: [
           out(""),
           out("MH-DOS Version 0.97", C.WHITE),
+          out("Reborn Labs Employee Terminal OS V0.2 - AUTHORIZED SUB-BUILD", C.WHITE),
           out(""),
         ],
       };
@@ -94,7 +95,6 @@ export function processCommand(
           out(""),
         ],
       };
-
     case "DIR": {
       const target = args[0];
       let lookPath = currentPath;
