@@ -904,9 +904,7 @@ export function processCommand(
     case "BRAIN_ROT": {
       return {
         lines: [
-          out(""),
-          sys("Brainrot mode enabled. Use commands like FEMBOY, GOLDENKNIGHT, etc.", C.GREEN),
-          out(""),
+          sys("Brainrot commands activated.", C.GREY),
         ],
         brainrotEnabled: true,
       };
