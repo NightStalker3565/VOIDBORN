@@ -9,6 +9,7 @@ import {
 } from "./fileSystemUtils";
 import { SERVERS, IP_TO_SERVER, LOCAL_SERVER_ID } from "../data/servers";
 import { C } from "./colors";
+import { clearScreenDown } from "node:readline";
 
 let lineCounter = 0;
 function makeLine(
@@ -27,6 +28,11 @@ function err(content: string): TerminalLine {
 }
 function sys(content: string, color?: string): TerminalLine {
   return makeLine("system", content, color ?? C.CYAN);
+}
+
+function generatePatternLines(pattern: string, lineCount: number, lineLength: number, color?: string) {
+  const row = Array.from({ length: lineLength }, (_, i) => pattern[i % pattern.length]).join("");
+  return Array.from({ length: lineCount }, () => ({ text: row, color, charDelay: 0 }));
 }
 
 export interface CommandResult {
@@ -921,12 +927,6 @@ export function processCommand(
       };
     }
 
-    case "UWU": {
-      return {
-        lines: [out("Ayo bro")],
-      };
-    }
-
     case "67": {
       return {
         lines: [],
@@ -938,6 +938,7 @@ export function processCommand(
           { text: "  ██╔══██╗    ██╔╝ ", color: "#FF0000", charDelay: 0 },
           { text: "  ╚██████╔╝   ██║  ", color: "#FF0000", charDelay: 0 },
           { text: "   ╚═════╝    ╚═╝  ", color: "#FF0000", charDelay: 0 },
+          ...generatePatternLines("67", 24, 80, "#FF0000"),
         ],
       };
     }
