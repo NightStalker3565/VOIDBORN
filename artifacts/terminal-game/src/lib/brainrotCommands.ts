@@ -100,7 +100,7 @@ export function processBrainrotCommand(
       @*......#+:..............................-...........:*............*@     
 `,
             color: "#FF69B4",
-            charDelay: 50,
+            charDelay: 8,
           },
           {
             text: `     @%........................#....:%%+@@##%@*:..........................=@    
@@ -131,7 +131,7 @@ export function processBrainrotCommand(
                      @@........................................+@               
 `,
             color: "#FF69B4",
-            charDelay: 90,
+            charDelay: 3,
           },
         ],
       };
