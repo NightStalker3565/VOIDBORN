@@ -575,7 +575,7 @@ export default function Terminal() {
         fontFamily: "'Courier New', Courier, monospace",
         fontSize: zoomOut ? "0.7rem" : "0.875rem",
         transform: zoomOut ? "scale(0.92)" : "scale(1)",
-        transformOrigin: "top center",
+        transformOrigin: "center center",
         transition: "font-size 200ms ease, transform 200ms ease",
       }}
     >
