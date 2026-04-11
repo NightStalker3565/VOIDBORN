@@ -79,13 +79,11 @@ export default function Terminal() {
   const [cursorBlink, setCursorBlink] = useState(true);
   const [commandSequence, setCommandSequence] = useState<{ text: string; color?: string; charDelay?: number }[] | null>(null);
   const [cursorPos, setCursorPos] = useState(0);
-  const [zoomOut, setZoomOut] = useState(false);
 
   // Queue of lines to drip-print into state.lines one at a time
   const [outputQueue, setOutputQueue] = useState<TerminalLine[]>([]);
   const outputQueueRef = useRef<TerminalLine[]>([]);
   const outputTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const zoomRestoreTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -259,27 +257,8 @@ export default function Terminal() {
   useEffect(() => {
     return () => {
       if (outputTimerRef.current) clearTimeout(outputTimerRef.current);
-      if (zoomRestoreTimerRef.current) clearTimeout(zoomRestoreTimerRef.current);
     };
   }, []);
-
-  useEffect(() => {
-    if (commandSequence !== null) return;
-    if (!zoomOut) return;
-
-    if (zoomRestoreTimerRef.current) {
-      clearTimeout(zoomRestoreTimerRef.current);
-    }
-
-    zoomRestoreTimerRef.current = setTimeout(() => {
-      setZoomOut(false);
-      zoomRestoreTimerRef.current = null;
-    }, 1200);
-
-    return () => {
-      if (zoomRestoreTimerRef.current) clearTimeout(zoomRestoreTimerRef.current);
-    };
-  }, [commandSequence, zoomOut]);
 
   const focusInput = useCallback(() => {
     inputRef.current?.focus();
@@ -394,7 +373,6 @@ export default function Terminal() {
       }
 
       if (result.typingSequence) {
-        if (result.zoomOut) setZoomOut(true);
         setState((prev) => {
           const newLines = result.clearScreen ? [] : [...prev.lines, echoLine];
           return {
@@ -573,10 +551,7 @@ export default function Terminal() {
       onClick={focusInput}
       style={{
         fontFamily: "'Courier New', Courier, monospace",
-        fontSize: zoomOut ? "0.7rem" : "0.875rem",
-        transform: zoomOut ? "scale(0.92)" : "scale(1)",
-        transformOrigin: "center center",
-        transition: "font-size 200ms ease, transform 200ms ease",
+        fontSize: "0.875rem",
       }}
     >
       <div className="flex-1 overflow-y-auto">
