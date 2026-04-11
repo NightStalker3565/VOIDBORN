@@ -50,7 +50,7 @@ export function processBrainrotCommand(
         lines: [],
         clearScreen: false,
         typingSequence: [
-          { text: "Not the best team, but they have style!", color: C.YELLOW, charDelay: 0 },
+          { text: "Not the best team, but they have style!", color: C.YELLOW, charDelay: 30 },
         ],
       };
     }
@@ -132,7 +132,7 @@ export function processBrainrotCommand(
         lines: [],
         clearScreen: true,
         typingSequence: [
-          {text: "NULL"}
+          { text: "NULL", charDelay: 36 },
         ],
       };
     }
@@ -142,12 +142,12 @@ export function processBrainrotCommand(
         lines: [],
         clearScreen: true,
         typingSequence: [
-          { text: "   ██████╗ ███████╗", color: "#FF0000", charDelay: 0 },
-          { text: "  ██╔════╝ ╚════██║", color: "#FF0000", charDelay: 0 },
-          { text: "  ██████╗      ██╔╝", color: "#FF0000", charDelay: 0 },
-          { text: "  ██╔══██╗    ██╔╝ ", color: "#FF0000", charDelay: 0 },
-          { text: "  ╚██████╔╝   ██║  ", color: "#FF0000", charDelay: 0 },
-          { text: "   ╚═════╝    ╚═╝  ", color: "#FF0000", charDelay: 0 },
+          { text: "   ██████╗ ███████╗", color: "#FF0000", charDelay: 20 },
+          { text: "  ██╔════╝ ╚════██║", color: "#FF0000", charDelay: 20 },
+          { text: "  ██████╗      ██╔╝", color: "#FF0000", charDelay: 20 },
+          { text: "  ██╔══██╗    ██╔╝ ", color: "#FF0000", charDelay: 20 },
+          { text: "  ╚██████╔╝   ██║  ", color: "#FF0000", charDelay: 20 },
+          { text: "   ╚═════╝    ╚═╝  ", color: "#FF0000", charDelay: 20 },
           ...generatePatternLines("67", 24, 80, "#FF0000"),
         ],
       };
@@ -161,7 +161,7 @@ export function processBrainrotCommand(
         lines: [],
         clearScreen: true,
         typingSequence: [
-          { text: "ERROR: You can only use this command in Ohio.", color: "#FF0000", charDelay: 0 },
+          { text: "ERROR: You can only use this command in Ohio.", color: "#FF0000", charDelay: 24 },
         ],
       };
     }
