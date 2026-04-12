@@ -907,7 +907,7 @@ export function processCommand(
         clearScreen: false,
         typingSequence: [
           {
-            text: "Brainrot mode enabled. Use commands like FEMBOY, GOLDENKNIGHT, etc.",
+            text: "Brainrot mode enabled",
             color: C.GREY,
             charDelay: 30,
           },

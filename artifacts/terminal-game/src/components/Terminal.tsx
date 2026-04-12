@@ -398,6 +398,7 @@ export default function Terminal() {
               ? [inputValue, ...prev.history.slice(0, 99)]
               : prev.history,
             historyIndex: -1,
+            brainrotEnabled: result.brainrotEnabled ?? prev.brainrotEnabled,
           };
         });
         setCommandSequence(result.typingSequence);
