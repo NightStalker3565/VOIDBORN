@@ -144,11 +144,11 @@ export function processBrainrotCommand(
         {
             text: `Oh, I see... Well...`,        
             color: "#FF69B4",
-            charDelay: 160,},  
+            charDelay: 200,},  
         {
             text: `UWU`,        
             color: "#FF69B4",
-            charDelay: 250,},     
+            charDelay: 500,},     
         ],
       };
     }
