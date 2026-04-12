@@ -42,7 +42,8 @@ export interface CommandResult {
 export function processBrainrotCommand(
   cmd: string,
   args: string[],
-  state: TerminalState
+  state: TerminalState,
+  terminalMetrics?: { cols: number; rows: number }
 ): CommandResult | null {
   switch (cmd) {
     case "GOLDEN_KNIGHT":
@@ -156,7 +157,7 @@ export function processBrainrotCommand(
     case "MURDER_DRONES": {
       return {
         lines: [],
-        clearScreen: true,
+        clearScreen: false,
         typingSequence: [
           { text: "NULL", charDelay: 36 },
         ],
@@ -164,9 +165,11 @@ export function processBrainrotCommand(
     }
 
     case "67": {
+      const cols = terminalMetrics?.cols ?? 80;
+      const lineCount = Math.max(1, cols * 12);
       return {
         lines: [],
-        clearScreen: true,
+        clearScreen: false,
         typingSequence: [
           { text: "   ██████╗ ███████╗", color: "#FF0000", charDelay: 20 },
           { text: "  ██╔════╝ ╚════██║", color: "#FF0000", charDelay: 20 },
@@ -174,7 +177,7 @@ export function processBrainrotCommand(
           { text: "  ██╔══██╗    ██╔╝ ", color: "#FF0000", charDelay: 20 },
           { text: "  ╚██████╔╝   ██║  ", color: "#FF0000", charDelay: 20 },
           { text: "   ╚═════╝    ╚═╝  ", color: "#FF0000", charDelay: 20 },
-          ...generatePatternLines("67", 24, 80, "#FF0000"),
+          ...generatePatternLines("67", lineCount, cols, "#FF0000"),
         ],
       };
     }
@@ -185,7 +188,7 @@ export function processBrainrotCommand(
     case "OHIO": {
       return {
         lines: [],
-        clearScreen: true,
+        clearScreen: false,
         typingSequence: [
           { text: "ERROR: You can only use this command in Ohio.", color: "#FF0000", charDelay: 24 },
         ],
@@ -195,14 +198,14 @@ export function processBrainrotCommand(
     case "SKIBIDI": {
       return {
         lines: [],
-        clearScreen: true,
+        clearScreen: false,
         typingSequence: [
-          { text: "...", charDelay: 60 },
-          { text: "...", color: C.CYAN, charDelay: 60 },
-          { text: "...", color: C.CYAN, charDelay: 60 },
-          { text: "...", color: C.CYAN, charDelay: 60 },
-          { text: "...", color: C.GREY, charDelay: 60 },
-          { text: "dop dop?", color: C.GREY, charDelay: 60 },
+          { text: "...", color: C.WHITE, charDelay: 1000 },
+          { text: "...", color: C.WHITE, charDelay: 1000 },
+          { text: "...", color: C.WHITE, charDelay: 1000 },
+          { text: "...", color: C.WHITE, charDelay: 1000 },
+          { text: "...", color: C.WHITE, charDelay: 1000 },
+          { text: "dop dop?", color: C.GREY, charDelay: 75 },
         ],
       };
     }
@@ -214,10 +217,13 @@ export function processBrainrotCommand(
         for (let i = 0; i < len; i++) s += chars[Math.floor(Math.random() * chars.length)];
         return s;
       }
+      const cols = terminalMetrics?.cols ?? 80;
+      const lineCount = Math.max(1, cols * 12);
       const lines = [];
-      for (let i = 0; i < 25; i++) {
-        lines.push({ text: randStr(80), color: C.GREEN, charDelay: 0 });
+      for (let i = 0; i < lineCount; i++) {
+        lines.push({ text: randStr(cols), color: C.GREEN, charDelay: 0 });
       }
+      lines.push({ text: "Follow the white rabbit, Neo.", color: C.WHITE, charDelay: 500 });
       return {
         lines: [],
         clearScreen: true,

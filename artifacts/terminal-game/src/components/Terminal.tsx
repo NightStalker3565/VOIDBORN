@@ -80,6 +80,7 @@ export default function Terminal() {
   const [cursorBlink, setCursorBlink] = useState(true);
   const [commandSequence, setCommandSequence] = useState<{ text: string; color?: string; charDelay?: number }[] | null>(null);
   const [cursorPos, setCursorPos] = useState(0);
+  const [terminalMetrics, setTerminalMetrics] = useState({ cols: 80, rows: 25 });
 
   // Queue of lines to drip-print into state.lines one at a time
   const [outputQueue, setOutputQueue] = useState<TerminalLine[]>([]);
@@ -88,6 +89,8 @@ export default function Terminal() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Cursor blink
@@ -283,6 +286,29 @@ export default function Terminal() {
     return () => document.removeEventListener("click", handleClick);
   }, []);
 
+  useEffect(() => {
+    const updateMetrics = () => {
+      const contentEl = contentRef.current;
+      const measureEl = measureRef.current;
+      if (!contentEl || !measureEl) return;
+      const { width, height } = contentEl.getBoundingClientRect();
+      const { width: charWidth, height: charHeight } = measureEl.getBoundingClientRect();
+      if (charWidth <= 0 || charHeight <= 0) return;
+      const cols = Math.max(1, Math.floor(width / charWidth));
+      const rows = Math.max(1, Math.floor(height / charHeight));
+      setTerminalMetrics({ cols, rows });
+    };
+
+    updateMetrics();
+    const resizeObserver = new ResizeObserver(updateMetrics);
+    if (contentRef.current) resizeObserver.observe(contentRef.current);
+    window.addEventListener("resize", updateMetrics);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateMetrics);
+    };
+  }, []);
+
   const getPrompt = useCallback((): string => {
     const { connectedServer, currentPath } = state;
     if (connectedServer) {
@@ -376,7 +402,7 @@ export default function Terminal() {
         return;
       }
 
-      const result = processCommand(inputValue, state);
+      const result = processCommand(inputValue, state, terminalMetrics);
 
       const cmd = inputValue.trim().toUpperCase().split(/\s+/)[0];
       if (cmd === "TYPE" || cmd === "CAT") SFX.documentOpen();
@@ -571,7 +597,7 @@ export default function Terminal() {
         fontSize: "0.875rem",
       }}
     >
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto" ref={contentRef}>
         {state.lines.map((line) => (
           <div
             key={line.id}
@@ -607,6 +633,19 @@ export default function Terminal() {
 
         <div ref={bottomRef} />
       </div>
+
+      <span
+        ref={measureRef}
+        style={{
+          position: "absolute",
+          visibility: "hidden",
+          pointerEvents: "none",
+          whiteSpace: "pre",
+          fontFamily: "'Courier New', Courier, monospace",
+          fontSize: "0.875rem",
+          lineHeight: "1.25rem",
+        }}
+      >M</span>
 
       <input
         ref={inputRef}

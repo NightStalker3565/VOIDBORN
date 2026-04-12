@@ -52,7 +52,8 @@ export interface CommandResult {
 
 export function processCommand(
   raw: string,
-  state: TerminalState
+  state: TerminalState,
+  terminalMetrics?: { cols: number; rows: number }
 ): CommandResult {
   const trimmed = raw.trim();
   if (!trimmed) return { lines: [] };
@@ -919,7 +920,7 @@ export function processCommand(
     default:
       // Check brainrot commands if enabled
       if (state.brainrotEnabled) {
-        const brainrotResult = processBrainrotCommand(cmd, args, state);
+        const brainrotResult = processBrainrotCommand(cmd, args, state, terminalMetrics);
         if (brainrotResult) return brainrotResult;
       }
       return {
