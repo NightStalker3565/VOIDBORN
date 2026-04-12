@@ -45,7 +45,10 @@ export function processBrainrotCommand(
   state: TerminalState
 ): CommandResult | null {
   switch (cmd) {
-    case "GOLDENKNIGHT": {
+    case "GOLDEN_KNIGHT":
+    case "GOLDENKNIGHT":
+    case "GOLDEN_KNIGHTS":
+    case "GOLDENKNIGHTS": {
       return {
         lines: [],
         clearScreen: false,
