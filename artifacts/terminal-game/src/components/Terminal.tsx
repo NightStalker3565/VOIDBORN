@@ -78,7 +78,7 @@ export default function Terminal() {
   const [pendingServer, setPendingServer] = useState<Server | null>(null);
   const [writeLines, setWriteLines] = useState<string[]>([]);
   const [cursorBlink, setCursorBlink] = useState(true);
-  const [commandSequence, setCommandSequence] = useState<{ text: string; color?: string; charDelay?: number }[] | null>(null);
+  const [commandSequence, setCommandSequence] = useState<{ text: string; color?: string; charDelay?: number; appendToPrev?: boolean }[] | null>(null);
   const [cursorPos, setCursorPos] = useState(0);
   const [terminalMetrics, setTerminalMetrics] = useState({ cols: 80, rows: 25 });
 
@@ -185,43 +185,54 @@ export default function Terminal() {
 
     const timeouts: ReturnType<typeof setTimeout>[] = [];
     let delay = 0;
+    let currentLineContent = "";
 
     for (const entry of commandSequence) {
       const text = entry.text;
       const color = entry.color ?? C.WHITE;
       const cDelay = entry.charDelay ?? CHAR_DELAY_DEFAULT;
+      const appendToPrev = entry.appendToPrev ?? false;
 
       if (text === "" || cDelay === 0) {
-        timeouts.push(setTimeout(() => {
-          setState((prev) => ({
-            ...prev,
-            lines: [...prev.lines, makeLine("system", text, color)],
-          }));
-        }, delay));
+        if (!appendToPrev) {
+          timeouts.push(setTimeout(() => {
+            setState((prev) => ({
+              ...prev,
+              lines: [...prev.lines, makeLine("system", text, color)],
+            }));
+          }, delay));
+          currentLineContent = text;
+        }
         delay += cDelay === 0 ? 20 : 30;
         continue;
       }
 
-      timeouts.push(setTimeout(() => {
-        setState((prev) => ({
-          ...prev,
-          lines: [...prev.lines, makeLine("system", "", color)],
-        }));
-      }, delay));
+      if (!appendToPrev) {
+        timeouts.push(setTimeout(() => {
+          setState((prev) => ({
+            ...prev,
+            lines: [...prev.lines, makeLine("system", "", color)],
+          }));
+        }, delay));
+        currentLineContent = "";
+      }
+
+      const baseContent = currentLineContent;
 
       for (let i = 1; i <= text.length; i++) {
-        const partial = text.slice(0, i);
+        const fullContent = baseContent + text.slice(0, i);
         timeouts.push(setTimeout(() => {
           SFX.typing();
           setState((prev) => {
             const lines = [...prev.lines];
             const last = lines[lines.length - 1];
-            if (last) lines[lines.length - 1] = { ...last, content: partial };
+            if (last) lines[lines.length - 1] = { ...last, content: fullContent };
             return { ...prev, lines };
           });
         }, delay + i * cDelay));
       }
 
+      currentLineContent = baseContent + text;
       delay += text.length * cDelay + LINE_GAP;
     }
 
