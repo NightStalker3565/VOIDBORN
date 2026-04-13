@@ -88,6 +88,7 @@ export default function Terminal() {
   const outputTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const pendingServerRef = useRef<Server | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
@@ -253,6 +254,17 @@ export default function Terminal() {
     timeouts.push(setTimeout(() => {
       setCommandSequence(null);
       if (awaitingPassword) {
+        inputRef.current?.focus();
+      } else if (pendingServerRef.current) {
+        const srv = pendingServerRef.current;
+        pendingServerRef.current = null;
+        setPendingServer(null);
+        setState((prev) => ({
+          ...prev,
+          connectedServer: srv,
+          currentPath: [srv.id],
+          fileSystem: srv.fileSystem,
+        }));
         inputRef.current?.focus();
       }
     }, delay + 100));
@@ -453,9 +465,12 @@ export default function Terminal() {
           };
         });
         setCommandSequence(result.typingSequence);
-        if (result.awaitingPassword && result.pendingServer) {
-          setAwaitingPassword(true);
+        if (result.pendingServer) {
+          pendingServerRef.current = result.pendingServer;
           setPendingServer(result.pendingServer);
+          if (result.awaitingPassword) {
+            setAwaitingPassword(true);
+          }
         }
         return;
       }
