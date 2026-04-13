@@ -852,6 +852,7 @@ export function processCommand(
             { text: "Attempting to connect to server", color: C.GREY, charDelay: 50 },
             { text: "...", color: C.GREY, charDelay: 2000, appendToPrev: true },
             { text: "Connection established.", color: C.WHITE, charDelay: 50 },
+            {}
             { text: server.motd, color: C.ORANGE, charDelay: 20 },
           ],
         };

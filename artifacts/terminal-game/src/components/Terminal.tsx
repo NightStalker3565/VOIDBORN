@@ -78,7 +78,7 @@ export default function Terminal() {
   const [pendingServer, setPendingServer] = useState<Server | null>(null);
   const [writeLines, setWriteLines] = useState<string[]>([]);
   const [cursorBlink, setCursorBlink] = useState(true);
-  const [commandSequence, setCommandSequence] = useState<({ text: string; color?: string; charDelay?: number; appendToPrev?: boolean } | { pause: number })[] | null>(null);
+  const [commandSequence, setCommandSequence] = useState<({ text: string; color?: string; charDelay?: number; appendToPrev?: boolean } | { pause: number } | { clear: true })[] | null>(null);
   const [cursorPos, setCursorPos] = useState(0);
   const [terminalMetrics, setTerminalMetrics] = useState({ cols: 80, rows: 25 });
 
@@ -190,6 +190,15 @@ export default function Terminal() {
     for (const entry of commandSequence) {
       if ("pause" in entry) {
         delay += entry.pause;
+        continue;
+      }
+
+      if ("clear" in entry) {
+        timeouts.push(setTimeout(() => {
+          setState((prev) => ({ ...prev, lines: [] }));
+        }, delay));
+        currentLineContent = "";
+        delay += 30;
         continue;
       }
 
